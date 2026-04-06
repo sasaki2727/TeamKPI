@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務推進課 KPI管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6fa;--white:#fff;--surface:#f0f2f8;--border:#e2e6f0;
+  --text:#2d3561;--text2:#6b7399;--text3:#a8afc8;
+  --blue:#5b8dee;--blue-lt:#eef3fd;
+  --green:#34c48b;--green-lt:#edfbf4;
+  --yellow:#f7b731;--yellow-lt:#fff8e6;
+  --red:#fc5c65;--red-lt:#fff0f1;
+  --purple:#a55eea;--purple-lt:#f5eeff;
+  --pink:#f953c6;--pink-lt:#fef0fc;
+  --radius:16px;
+  --shadow:0 2px 12px rgba(45,53,97,.07);
+  --shadow-md:0 4px 24px rgba(45,53,97,.11);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;font-size:14px}
+.page{max-width:1440px;margin:0 auto;padding:28px 28px 80px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.header h1{font-family:'Nunito',sans-serif;font-size:24px;font-weight:800}
+.header .sub{font-size:13px;color:var(--text2);margin-top:3px}
+.header-right{display:flex;gap:10px;align-items:center}
+.pill{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700}
+.pill-green{background:var(--green-lt);color:var(--green)}
+.pill-yellow{background:var(--yellow-lt);color:#c97a00}
+.update-bar{background:var(--green-lt);border:1px solid #b3edd5;border-radius:10px;padding:10px 16px;margin-bottom:20px;font-size:12px;color:var(--green);display:flex;align-items:center;gap:8px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+.tabs{display:flex;gap:8px;margin-bottom:22px;background:var(--white);padding:6px;border-radius:14px;box-shadow:var(--shadow);width:fit-content;flex-wrap:wrap}
+.tab{padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .2s;font-family:'Noto Sans JP',sans-serif;display:flex;align-items:center;gap:8px}
+.tab:hover{background:var(--surface);color:var(--text)}
+.tab.active-sasaki{background:var(--pink-lt);color:var(--pink)}
+.tab.active-sano{background:var(--blue-lt);color:var(--blue)}
+.tab.active-kase{background:var(--green-lt);color:var(--green)}
+.tab.active-sakuma{background:var(--yellow-lt);color:#c97a00}
+.tab-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.member-section{display:none}
+.member-section.active{display:block;animation:fadeSlide .25s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.member-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;border-left:5px solid}
+.member-sasaki .member-card{border-left-color:var(--pink)}
+.member-sano   .member-card{border-left-color:var(--blue)}
+.member-kase   .member-card{border-left-color:var(--green)}
+.member-sakuma .member-card{border-left-color:var(--yellow)}
+.member-name{font-family:'Nunito',sans-serif;font-size:20px;font-weight:800}
+.member-role{font-size:12px;color:var(--text2);margin-top:3px}
+.score-num{font-family:'Nunito',sans-serif;font-size:36px;font-weight:800;line-height:1}
+.score-label{font-size:11px;color:var(--text3);margin-top:3px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;background:var(--white);color:var(--text2);box-shadow:var(--shadow)}
+.chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.goals-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:1024px){.goals-row{grid-template-columns:1fr}}
+.goal-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;transition:box-shadow .2s}
+.goal-card:hover{box-shadow:var(--shadow-md)}
+.goal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.goal-no{font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:6px;line-height:1.4}
+.goal-weight{font-size:11px;color:var(--text3)}
+.goal-title{font-size:14px;font-weight:700;line-height:1.5;margin-bottom:6px}
+.goal-logic{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.progress-label{font-size:12px;color:var(--text2)}
+.progress-pct{font-family:'Nunito',sans-serif;font-size:16px;font-weight:800}
+.progress-track{height:10px;background:var(--surface);border-radius:5px;overflow:hidden;margin-bottom:10px}
+.progress-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.slider-row label{font-size:11px;color:var(--text3);white-space:nowrap}
+input[type=range]{-webkit-appearance:none;flex:1;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--white);border:3px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.slider-val{font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;min-width:36px;text-align:right}
+.evidence-box{background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.evidence-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.evidence-item{font-size:12px;color:var(--text2);line-height:1.6;padding:2px 0;display:flex;gap:6px}
+.evidence-item::before{content:'·';color:var(--text3);flex-shrink:0}
+em{font-style:normal;color:var(--text);font-weight:600}
+.new-badge{display:inline-block;font-size:9px;font-weight:700;background:var(--green-lt);color:var(--green);padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.goal-footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between}
+.status-pill{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px}
+.c-complete{color:var(--green)}.c-progress{color:var(--blue)}.c-caution{color:#c97a00}.c-alert{color:var(--red)}
+.bg-complete{background:var(--green-lt);color:var(--green)}
+.bg-progress{background:var(--blue-lt);color:var(--blue)}
+.bg-caution{background:var(--yellow-lt);color:#c97a00}
+.bg-alert{background:var(--red-lt);color:var(--red)}
+.fill-complete{background:linear-gradient(90deg,var(--green),#5de4b0)}
+.fill-progress{background:linear-gradient(90deg,var(--blue),#85aefc)}
+.fill-caution{background:linear-gradient(90deg,var(--yellow),#fcd86f)}
+.fill-alert{background:linear-gradient(90deg,var(--red),#ff8a8e)}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.bottom-row{grid-template-columns:1fr}}
+.panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.panel-title{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.action-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.action-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface)}
+.action-item.done{opacity:.45}
+.action-item.done .action-text{text-decoration:line-through}
+.action-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);background:var(--white);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin-top:1px;user-select:none}
+.action-item.done .action-check{background:var(--green);border-color:var(--green);color:white}
+.action-text{font-size:13px;color:var(--text);line-height:1.5;flex:1}
+.add-row{display:flex;gap:8px}
+.add-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .15s}
+.add-input:focus{border-color:var(--blue)}
+.add-input::placeholder{color:var(--text3)}
+.add-btn{padding:9px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;color:white;transition:opacity .15s;white-space:nowrap}
+.add-btn:hover{opacity:.85}
+.comment-ta{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text);font-family:'Noto Sans JP',sans-serif;resize:vertical;min-height:90px;outline:none;transition:border-color .15s;line-height:1.7}
+.comment-ta:focus{border-color:var(--blue)}
+.comment-ta::placeholder{color:var(--text3)}
+.comment-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.save-hint{font-size:11px;color:var(--text3)}
+.save-btn{padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;color:white;background:linear-gradient(135deg,var(--blue),var(--purple));transition:opacity .15s}
+.save-btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="header">
+  <div>
+    <h1>📋 業務推進課 KPI管理</h1>
+    <div class="sub">目標・進捗・ネクストアクション管理ダッシュボード</div>
+  </div>
+  <div class="header-right">
+    <div class="pill pill-green">📅 2026.04.03 更新</div>
+    <div class="pill pill-yellow">3Q 目標期間</div>
+  </div>
+</div>
+<div class="update-bar">✅ <strong>Slack分析期間：2026年3月1日〜4月3日（最新）</strong>　4名の進捗を反映しました</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>達成圏 (80〜100%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>進行中 (50〜79%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>要注意 (20〜49%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>要介入 (0〜19%)</div>
+</div>
+<div class="tabs">
+  <button class="tab active-sasaki" id="tab-sasaki" onclick="switchTab('sasaki')"><span class="tab-dot" style="background:var(--pink)"></span>佐々木 ゆみこ</button>
+  <button class="tab" id="tab-sano"   onclick="switchTab('sano')">  <span class="tab-dot" style="background:var(--blue)"></span>佐野 ほなみ</button>
+  <button class="tab" id="tab-kase"   onclick="switchTab('kase')">  <span class="tab-dot" style="background:var(--green)"></span>加瀬 大智</button>
+  <button class="tab" id="tab-sakuma" onclick="switchTab('sakuma')"><span class="tab-dot" style="background:var(--yellow)"></span>佐久間 友加里</button>
+</div>
+
+<!-- ===== 佐々木 ===== -->
+<div id="sec-sasaki" class="member-section member-sasaki active">
+  <div class="member-card">
+    <div><div class="member-name">佐々木 ゆみこ</div><div class="member-role">業務推進課 メンバー</div></div>
+    <div><div class="score-num c-progress" id="sasaki-total">—</div><div class="score-label">総合スコア / 100pt</div></div>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="chip-dot" style="background:var(--yellow)"></div>インフル1週間療養→3/30復帰・Slack返信再開</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--green)"></div>IRIAM・Pococha・ふわっちの3月売上記入・確認依頼（4/2）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>佐久間さんに目標シートを共有（3/30）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>加瀬さんへのメール前後確認を対応（3/31）</div>
+  </div>
+  <div class="goals-row">
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-progress">No.1</span><span class="goal-weight">配点 50pt</span></div>
+      <div class="goal-title">【業務移管の完遂マネジメント】「佐野・佐々木がいなくても現場が回る」状態へ</div>
+      <div class="goal-logic">佐野／佐々木が実務に割く時間を前Q比50%削減し、管理とAIに充てる。4Q：加瀬／佐久間への業務移管を7月末までに100%完了させる。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-progress" id="sasaki-g1-pct">55%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-progress" id="sasaki-g1-bar" style="width:55%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="55" style="accent-color:var(--pink)" oninput="updateSlider('sasaki','g1',this.value)"><span class="slider-val c-progress" id="sasaki-g1-sv">55%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">3月中旬にインフル療養→3/30に復帰しSlack返信再開</div>
+        <div class="evidence-item"><em>佐久間さんに目標シートを共有</em>・4月の体制を整備（3/30）</div>
+        <div class="evidence-item">4月から佐久間さんが時短勤務でも回る体制を整える方針を全体へ共有（4/1）</div>
+        <div class="evidence-item">加瀬さんへのメール前後確認（3/31）・報酬計算の質問対応（4/2）</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-progress">移管推進中</span><span style="font-size:11px;color:var(--text3)">目標 100%</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-progress">No.2</span><span class="goal-weight">配点 100pt</span></div>
+      <div class="goal-title">【要件定義】社内のAI化依頼の要件定義・管理</div>
+      <div class="goal-logic">社内から来るAI化依頼を受け、要件定義・管理を行う。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-progress" id="sasaki-g2-pct">60%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-progress" id="sasaki-g2-bar" style="width:60%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="60" style="accent-color:var(--pink)" oninput="updateSlider('sasaki','g2',this.value)"><span class="slider-val c-progress" id="sasaki-g2-sv">60%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">工数管理シートの自動アラートBot設定・運用開始（3/14〜3/15）</div>
+        <div class="evidence-item">ChatGPTで工数シート分析の活用方法を佐野さんと検討（3/13）</div>
+        <div class="evidence-item">インフル療養期間（約1週間）は要件定義関連の明示的な行動なし</div>
+        <div class="evidence-item">復帰後は各種売上記入・確認業務に注力（4/2）</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-progress">進行中</span><span style="font-size:11px;color:var(--text3)">目標 100</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-caution">No.3</span><span class="goal-weight">配点 2pt</span></div>
+      <div class="goal-title">【自らAIを使い倒す（実践）】AIで実務改善・社外販売ツール作成を2件やり遂げる</div>
+      <div class="goal-logic">難易度が高い、または全社波及効果が大きい業務を自らAI化し、成功事例を作る。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-caution" id="sasaki-g3-pct">35%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-caution" id="sasaki-g3-bar" style="width:35%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="35" style="accent-color:var(--pink)" oninput="updateSlider('sasaki','g3',this.value)"><span class="slider-val c-caution" id="sasaki-g3-sv">35%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">工数管理アラートBotの設定が自動化実績（3/14〜3/15）</div>
+        <div class="evidence-item">ChatGPTで工数シート分析を試行中（3/13）</div>
+        <div class="evidence-item">インフル療養でAI実践が中断。「2件やり遂げる」完成事例はまだ確認できていない</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-caution">着手中・一時停滞</span><span style="font-size:11px;color:var(--text3)">目標 2件完成</span></div>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--pink-lt);color:var(--pink)">✅</span>ネクストアクション</div>
+      <div class="action-list" id="sasaki-actions"></div>
+      <div class="add-row">
+        <input class="add-input" id="sasaki-action-input" placeholder="新しいアクションを追加..." onkeydown="if(event.key==='Enter')addAction('sasaki')">
+        <button class="add-btn" style="background:var(--pink)" onclick="addAction('sasaki')">追加</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--purple-lt);color:var(--purple)">💬</span>マネージャーコメント</div>
+      <textarea class="comment-ta" id="sasaki-comment" placeholder="佐々木さんへのフィードバック・所感を入力..."></textarea>
+      <div class="comment-footer"><span class="save-hint">ブラウザに保存されます</span><button class="save-btn" onclick="saveComment('sasaki')">保存する</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 佐野 ===== -->
+<div id="sec-sano" class="member-section member-sano">
+  <div class="member-card">
+    <div><div class="member-name">佐野 ほなみ</div><div class="member-role">業務推進課 メンバー</div></div>
+    <div><div class="score-num c-progress" id="sano-total">—</div><div class="score-label">総合スコア / 100pt</div></div>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="chip-dot" style="background:var(--green)"></div>TikTokライバー管理システム稼働・継続運用中</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>LINE未読対応の仕組み整備を主導（4/2）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>お腹の調子悪い日もリモートで稼働（3/31）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--yellow)"></div>ライバー・特典制作依頼を継続対応中（3/26〜4/3）</div>
+  </div>
+  <div class="goals-row">
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-progress">No.1</span><span class="goal-weight">配点 20pt</span></div>
+      <div class="goal-title">【業務のプロダクト化】引き継ぎを「資産化」に変える</div>
+      <div class="goal-logic">担当全業務の棚卸しを実施し、マニュアル化・可視化を100%完了。後任へのレクチャー計画を策定し、自走できる形に整える。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-progress" id="sano-g1-pct">65%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-progress" id="sano-g1-bar" style="width:65%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="65" style="accent-color:var(--blue)" oninput="updateSlider('sano','g1',this.value)"><span class="slider-val c-progress" id="sano-g1-sv">65%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">発送フロー・依頼ルールをチームへ周知（3/17）</div>
+        <div class="evidence-item"><em>LINE未読対応の仕組み整備</em>を主導・チームへの分担を呼びかけ（4/2）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">特典制作依頼フロー（N列完了管理）を整備（3/26）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">引き継ぎ後も各所から質問が来ている状態は継続中</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-progress">進行中</span><span style="font-size:11px;color:var(--text3)">目標 100</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-complete">No.2</span><span class="goal-weight">配点 60pt</span></div>
+      <div class="goal-title">【AIによる実務自動化】既存業務へのAI即時投入</div>
+      <div class="goal-logic">Kライバー関連の自動化システム完成。GASによる制作指示書自動生成・通知自動化など、実務直結のAI活用を推進。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-complete" id="sano-g2-pct">90%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-complete" id="sano-g2-bar" style="width:90%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="90" style="accent-color:var(--green)" oninput="updateSlider('sano','g2',this.value)"><span class="slider-val c-complete" id="sano-g2-sv">90%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item"><em>TikTokライバー管理システム</em>を構築・稼働中（3/17〜）</div>
+        <div class="evidence-item"><em>タスク更新通知Bot</em>が稼働中（3/25、3/31、4/2にBot通知確認）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">ChatGPTで工数シート分析の活用方法を模索（3/13）</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-complete">達成圏</span><span style="font-size:11px;color:var(--text3)">目標 100</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-caution">No.3</span><span class="goal-weight">配点 20pt</span></div>
+      <div class="goal-title">【AIプロダクト準備】「業務推進×AI」活用シナリオ策定</div>
+      <div class="goal-logic">週1回ペースで国内外の「業務推進・バックオフィス×AI」事例をリサーチし、自社転用アイディアをストック（計12案以上）。KIRINZ AI100 データベース化。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-caution" id="sano-g3-pct">40%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-caution" id="sano-g3-bar" style="width:40%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="40" style="accent-color:var(--yellow)" oninput="updateSlider('sano','g3',this.value)"><span class="slider-val c-caution" id="sano-g3-sv">40%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">AI活用ツールの実投入は積極的に実施中</div>
+        <div class="evidence-item">リサーチストック12案のDB化については明示的な進捗報告なし</div>
+        <div class="evidence-item">実務稼働が高負荷のため、リサーチ時間の確保が課題</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-caution">要確認</span><span style="font-size:11px;color:var(--text3)">目標 12案</span></div>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--blue-lt);color:var(--blue)">✅</span>ネクストアクション</div>
+      <div class="action-list" id="sano-actions"></div>
+      <div class="add-row">
+        <input class="add-input" id="sano-action-input" placeholder="新しいアクションを追加..." onkeydown="if(event.key==='Enter')addAction('sano')">
+        <button class="add-btn" style="background:var(--blue)" onclick="addAction('sano')">追加</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--purple-lt);color:var(--purple)">💬</span>マネージャーコメント</div>
+      <textarea class="comment-ta" id="sano-comment" placeholder="佐野さんへのフィードバック・所感を入力..."></textarea>
+      <div class="comment-footer"><span class="save-hint">ブラウザに保存されます</span><button class="save-btn" onclick="saveComment('sano')">保存する</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 加瀬 ===== -->
+<div id="sec-kase" class="member-section member-kase">
+  <div class="member-card">
+    <div><div class="member-name">加瀬 大智</div><div class="member-role">業務推進課 メンバー</div></div>
+    <div><div class="score-num c-caution" id="kase-total">—</div><div class="score-label">総合スコア / 100pt</div></div>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="chip-dot" style="background:var(--green)"></div>毎日：問い合わせLINEチェック・工数シート記入・タスク整理・依頼処理（3/18〜4/2）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>報酬計算で不明点を佐々木さんに質問・Meet依頼（4/2）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--yellow)"></div>4月から時短勤務（11〜16時）で稼働</div>
+  </div>
+  <div class="goals-row">
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-progress">No.1</span><span class="goal-weight">配点 50pt</span></div>
+      <div class="goal-title">【業務習得・自走】佐野・佐々木業務の完全マスター</div>
+      <div class="goal-logic">移管ルーチン業務を「ミスなく・納期通り」に完遂できる状態にする。3Q末には月次・週次ルーチンを完結。★発注調整 ★発注作業 ★報酬計算</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-progress" id="kase-g1-pct">55%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-progress" id="kase-g1-bar" style="width:55%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="55" style="accent-color:var(--green)" oninput="updateSlider('kase','g1',this.value)"><span class="slider-val c-progress" id="kase-g1-sv">55%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item"><em>毎日ルーチン業務を自分でこなしている</em>：問い合わせLINEチェック・工数シート記入・タスク整理・依頼処理（3/18〜4/2）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">月末月初の申請作業も対応（3/30〜4/2）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">報酬計算で不明点あり佐々木さんに質問・Meetで確認依頼（4/2）</div>
+        <div class="evidence-item">4月から時短勤務（11〜16時）。時間内に終わらない場合は積極的に応援を頼む体制</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-progress">ルーティン定着中</span><span style="font-size:11px;color:var(--text3)">目標 100</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-caution">No.2</span><span class="goal-weight">配点 25pt</span></div>
+      <div class="goal-title">【マニュアル実証・改善】「日本一わかりやすいマニュアル」への昇華</div>
+      <div class="goal-logic">佐野が作ったマニュアルの「最初の読者」として誰でもわかる内容に磨き上げる。マニュアルへのフィードバックおよび修正提案5件以上。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-caution" id="kase-g2-pct">25%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-caution" id="kase-g2-bar" style="width:25%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="25" style="accent-color:var(--yellow)" oninput="updateSlider('kase','g2',this.value)"><span class="slider-val c-caution" id="kase-g2-sv">25%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">マニュアルFB・修正提案の投稿は引き続き確認できていない</div>
+        <div class="evidence-item">業務習得が優先フェーズであり、時短勤務もあって余力が少ない状況</div>
+        <div class="evidence-item"><em>FB5件の提出</em>を意識して取り組む必要あり</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-caution">要促進</span><span style="font-size:11px;color:var(--text3)">目標 5件FB</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-caution">No.3</span><span class="goal-weight">配点 25pt</span></div>
+      <div class="goal-title">【実務のAI置換】担当業務のAI化体験</div>
+      <div class="goal-logic">AI（ChatGPT等）を使い、担当業務（メール作成・集計・文章要約等）や社内効率化を一つでも「AI任せ」にしてみる。</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-caution" id="kase-g3-pct">20%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-caution" id="kase-g3-bar" style="width:20%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="20" style="accent-color:var(--yellow)" oninput="updateSlider('kase','g3',this.value)"><span class="slider-val c-caution" id="kase-g3-sv">20%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">AI活用実績・Slack投稿はまだ確認できていない</div>
+        <div class="evidence-item">時短勤務での業務習得を優先している状況</div>
+        <div class="evidence-item">まず<em>1件でもAI活用して報告</em>することを促進したい</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-caution">着手促進</span><span style="font-size:11px;color:var(--text3)">目標 1件AI置換</span></div>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--green-lt);color:var(--green)">✅</span>ネクストアクション</div>
+      <div class="action-list" id="kase-actions"></div>
+      <div class="add-row">
+        <input class="add-input" id="kase-action-input" placeholder="新しいアクションを追加..." onkeydown="if(event.key==='Enter')addAction('kase')">
+        <button class="add-btn" style="background:var(--green)" onclick="addAction('kase')">追加</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--purple-lt);color:var(--purple)">💬</span>マネージャーコメント</div>
+      <textarea class="comment-ta" id="kase-comment" placeholder="加瀬さんへのフィードバック・所感を入力..."></textarea>
+      <div class="comment-footer"><span class="save-hint">ブラウザに保存されます</span><button class="save-btn" onclick="saveComment('kase')">保存する</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 佐久間 ===== -->
+<div id="sec-sakuma" class="member-section member-sakuma">
+  <div class="member-card">
+    <div><div class="member-name">佐久間 友加里</div><div class="member-role">業務推進課 メンバー</div></div>
+    <div><div class="score-num c-complete" id="sakuma-total">—</div><div class="score-label">総合スコア / 100pt</div></div>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="chip-dot" style="background:var(--green)"></div>自分の業務アシスタントAI作成完成・確認出し（3/26）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--green)"></div>事業部研修AI化動画を作成・完成・確認出し（3/26）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>問い合わせメール対応を正式に担当（3/18〜）</div>
+    <div class="chip"><div class="chip-dot" style="background:var(--blue)"></div>月末月初申請作業を実施（3/30〜4/2）</div>
+  </div>
+  <div class="goals-row">
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-complete">No.1</span><span class="goal-weight">配点 50pt</span></div>
+      <div class="goal-title">【原価管理業務の自立完結】</div>
+      <div class="goal-logic">請求書処理・原価シート記入・ルール順守を確認なしで完結できる状態（目標値 100）</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-complete" id="sakuma-g1-pct">80%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-complete" id="sakuma-g1-bar" style="width:80%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="80" style="accent-color:var(--yellow)" oninput="updateSlider('sakuma','g1',this.value)"><span class="slider-val c-complete" id="sakuma-g1-sv">80%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">毎日引き継ぎ形式で日報を継続投稿（3/9〜4/2）</div>
+        <div class="evidence-item"><em>問い合わせメール対応を正式に巻き取り</em>・振り分けルールを自分で整備（3/18〜）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item"><em>月末月初の申請作業</em>を自分でこなした（3/30〜4/2）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">Amazon・アクセア申請も担当（4/2）。KOシート記載ルール対応継続中</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-complete">達成圏</span><span style="font-size:11px;color:var(--text3)">目標 100</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-complete">No.2</span><span class="goal-weight">配点 30pt</span></div>
+      <div class="goal-title">【AI実務活用 3件報告】SlackでAI活用を投稿</div>
+      <div class="goal-logic">AI活用した業務をSlackで3回以上投稿（内容・結果・学びを1行でOK）（目標値 100）</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-complete" id="sakuma-g2-pct">100%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-complete" id="sakuma-g2-bar" style="width:100%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="100" style="accent-color:var(--green)" oninput="updateSlider('sakuma','g2',this.value)"><span class="slider-val c-complete" id="sakuma-g2-sv">100%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">自分専用AI（業務アシスタント）作成・動作確認（3/9〜3/26）</div>
+        <div class="evidence-item"><em>業務アシスタントAI完成・確認出し</em>（3/26）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item"><em>事業部研修AI化動画を作成・完成・確認出し</em>（3/26）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">3件以上の明確なAI活用実績を確認。目標達成と判断！</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-complete">✨ 達成！</span><span style="font-size:11px;color:var(--text3)">目標 3回投稿</span></div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-top"><span class="goal-no bg-complete">No.3</span><span class="goal-weight">配点 20pt</span></div>
+      <div class="goal-title">【事業研修資料AI化】AIで整理した業務資料を提出・発表</div>
+      <div class="goal-logic">事業研修でAIを使って整理した業務資料を提出・発表できる状態にする（目標値 100）</div>
+      <div class="progress-row"><span class="progress-label">達成度</span><span class="progress-pct c-complete" id="sakuma-g3-pct">85%</span></div>
+      <div class="progress-track"><div class="progress-fill fill-complete" id="sakuma-g3-bar" style="width:85%"></div></div>
+      <div class="slider-row"><label>調整</label><input type="range" min="0" max="100" value="85" style="accent-color:var(--yellow)" oninput="updateSlider('sakuma','g3',this.value)"><span class="slider-val c-complete" id="sakuma-g3-sv">85%</span></div>
+      <div class="evidence-box">
+        <div class="evidence-title">💬 Slack（3/1〜4/3）</div>
+        <div class="evidence-item">事業研修の台本をChatGPTで作成・高木さんへ確認依頼（3/4）</div>
+        <div class="evidence-item"><em>事業部研修AI化動画を作成・完成・確認出し</em>（3/26）<span class="new-badge">NEW</span></div>
+        <div class="evidence-item">動画まで完成。発表（提出）の最終確認が残るのみ</div>
+      </div>
+      <div class="goal-footer"><span class="status-pill bg-complete">動画完成・発表待ち</span><span style="font-size:11px;color:var(--text3)">目標 完成・発表</span></div>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--yellow-lt);color:#c97a00">✅</span>ネクストアクション</div>
+      <div class="action-list" id="sakuma-actions"></div>
+      <div class="add-row">
+        <input class="add-input" id="sakuma-action-input" placeholder="新しいアクションを追加..." onkeydown="if(event.key==='Enter')addAction('sakuma')">
+        <button class="add-btn" style="background:var(--yellow);color:#5a3c00" onclick="addAction('sakuma')">追加</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="panel-icon" style="background:var(--purple-lt);color:var(--purple)">💬</span>マネージャーコメント</div>
+      <textarea class="comment-ta" id="sakuma-comment" placeholder="佐久間さんへのフィードバック・所感を入力..."></textarea>
+      <div class="comment-footer"><span class="save-hint">ブラウザに保存されます</span><button class="save-btn" onclick="saveComment('sakuma')">保存する</button></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const W={sasaki:{g1:50,g2:100,g3:2},sano:{g1:20,g2:60,g3:20},kase:{g1:50,g2:25,g3:25},sakuma:{g1:50,g2:30,g3:20}};
+function stClass(p){return p>=80?'complete':p>=50?'progress':p>=20?'caution':'alert'}
+function updateSlider(m,g,val){
+  const p=parseInt(val),id=`${m}-${g}`,st=stClass(p);
+  document.getElementById(`${id}-pct`).textContent=p+'%';
+  document.getElementById(`${id}-pct`).className=`progress-pct c-${st}`;
+  document.getElementById(`${id}-bar`).style.width=p+'%';
+  document.getElementById(`${id}-bar`).className=`progress-fill fill-${st}`;
+  document.getElementById(`${id}-sv`).textContent=p+'%';
+  document.getElementById(`${id}-sv`).className=`slider-val c-${st}`;
+  calcTotal(m);
+  localStorage.setItem(`kpi6-slider-${id}`,p);
+}
+function calcTotal(m){
+  const w=W[m];if(!w)return;
+  let t=0;
+  for(const[g,wt] of Object.entries(w)){const el=document.getElementById(`${m}-${g}-pct`);if(el)t+=(parseInt(el.textContent)/100)*wt;}
+  const sc=Math.round(t),el=document.getElementById(`${m}-total`);
+  if(el){el.textContent=sc;el.className=`score-num c-${stClass(sc)}`;}
+}
+function switchTab(id){
+  ['sasaki','sano','kase','sakuma'].forEach(m=>{
+    document.getElementById(`sec-${m}`).classList.remove('active');
+    document.getElementById(`tab-${m}`).className='tab';
+  });
+  document.getElementById(`sec-${id}`).classList.add('active');
+  document.getElementById(`tab-${id}`).className=`tab active-${id}`;
+  calcTotal(id);
+}
+const DEFAULTS={
+  sasaki:[
+    {text:'AI実践2件目の着手内容を決めてSlackに宣言する',done:false},
+    {text:'加瀬・佐久間の自走状況を1on1で確認する',done:false},
+    {text:'ChatGPT工数シート分析の結果をチームに共有する',done:false},
+  ],
+  sano:[
+    {text:'AIリサーチストック12案の現在数をSlackで報告する',done:false},
+    {text:'TikTokシステムの完成状況をチームに共有する',done:false},
+    {text:'引き継ぎ後も質問が来ている箇所のマニュアルを補強する',done:false},
+  ],
+  kase:[
+    {text:'報酬計算を一人で完結できたか確認・報告する',done:false},
+    {text:'マニュアルへのFB1件目を佐野さんへ提出する',done:false},
+    {text:'AI活用業務を1件試みてSlackに投稿する',done:false},
+  ],
+  sakuma:[
+    {text:'事業研修資料の発表を完了・報告する',done:false},
+    {text:'AI実務報告3件の正式カウントを高木さんに確認する',done:false},
+    {text:'4月の時短勤務体制で困ったことをSlackに共有する',done:false},
+  ]
+};
+function loadActions(m){
+  const raw=localStorage.getItem(`kpi6-actions-${m}`);
+  if(!raw){const a=DEFAULTS[m].map(x=>({...x}));localStorage.setItem(`kpi6-actions-${m}`,JSON.stringify(a));return a;}
+  return JSON.parse(raw);
+}
+function saveActions(m,a){localStorage.setItem(`kpi6-actions-${m}`,JSON.stringify(a))}
+function renderActionList(m,actions){
+  const c=document.getElementById(`${m}-actions`);c.innerHTML='';
+  actions.forEach((a,i)=>{
+    const div=document.createElement('div');
+    div.className='action-item'+(a.done?' done':'');
+    div.innerHTML=`<div class="action-check" onclick="toggleAction('${m}',${i})">${a.done?'✓':''}</div><span class="action-text">${esc(a.text)}</span>`;
+    c.appendChild(div);
+  });
+}
+function toggleAction(m,i){const actions=loadActions(m);actions[i].done=!actions[i].done;saveActions(m,actions);renderActionList(m,actions);}
+function addAction(m){
+  const inp=document.getElementById(`${m}-action-input`);const text=inp.value.trim();if(!text)return;
+  const actions=loadActions(m);actions.push({text,done:false});saveActions(m,actions);renderActionList(m,actions);inp.value='';
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function saveComment(m){
+  localStorage.setItem(`kpi6-comment-${m}`,document.getElementById(`${m}-comment`).value);
+  const btn=event.target;btn.textContent='✓ 保存しました';btn.style.background='linear-gradient(135deg,var(--green),#06b6d4)';
+  setTimeout(()=>{btn.textContent='保存する';btn.style.background='';},2000);
+}
+['sasaki','sano','kase','sakuma'].forEach(m=>{
+  Object.keys(W[m]).forEach((g,idx)=>{
+    const sv=localStorage.getItem(`kpi6-slider-${m}-${g}`);
+    if(sv!==null){const inputs=document.querySelectorAll(`#sec-${m} input[type=range]`);if(inputs[idx]){inputs[idx].value=sv;updateSlider(m,g,sv);}}
+  });
+  const sc=localStorage.getItem(`kpi6-comment-${m}`);if(sc){const el=document.getElementById(`${m}-comment`);if(el)el.value=sc;}
+  renderActionList(m,loadActions(m));
+  calcTotal(m);
+});
+</script>
+</body>
+</html>
